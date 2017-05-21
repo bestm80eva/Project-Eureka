@@ -1,6 +1,10 @@
-*.bak
 *.o
+*.list
+*.elf
+*.img
+*.bat
+*.bak
 *.lpi
-Demo-master/
-lib/
-pesp-master/
+Demo-master
+pesp-master
+lib
