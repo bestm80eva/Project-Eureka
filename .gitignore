@@ -1,0 +1,6 @@
+*.bak
+*.o
+*.lpi
+Demo-master/
+lib/
+pesp-master/
