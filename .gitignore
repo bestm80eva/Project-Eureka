@@ -5,6 +5,7 @@
 *.bat
 *.bak
 *.lpi
+*.lps
 Demo-master
 pesp-master
 lib
