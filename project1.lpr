@@ -12,7 +12,7 @@ uses
  BCM2710,
  HeapManager,
  link_server, {this_one}
- call_client, {and_this_one}
+ //call_client, {and_this_one}
  Classes,
  Ultibo,
  UltiboClasses,
@@ -30,13 +30,14 @@ uses
  Shell,
  ShellFilesystem;
 
-type
-  TMyFunc = function():longword; cdecl;
+{type
+  TMyFunc = function():longword; cdecl;}
 
 var
   ret:LongInt;
-  Buffer:PByte;
-  PageTableEntry:TPageTableEntry;
+  aLoader:TBinLoader;
+  //Buffer:PByte;
+  //PageTableEntry:TPageTableEntry;
   WindowHandle:TWindowHandle;
 
 begin
@@ -45,34 +46,38 @@ begin
  //The buffer will also be aligned to the page size for the same reason.
  WindowHandle:=ConsoleWindowCreate(ConsoleDeviceGetDefault, CONSOLE_POSITION_FULL, True);
 
- Buffer:=GetAlignedMem(MEMORY_PAGE_SIZE, MEMORY_PAGE_SIZE);
- if Buffer = nil then Exit;
+ WindowHandle:=ConsoleWindowCreate(ConsoleDeviceGetDefault, CONSOLE_POSITION_FULL, True);
+  ThreadSleep(3000);
+  {We may need to wait a couple of seconds for any drive to be ready}
+ ConsoleWindowWriteLn(WindowHandle,'Waiting for drive C:\');
+ while not DirectoryExists('C:\') do
+  begin
+   {Sleep for a second}
+   Sleep(1000);
+  end;
+ ConsoleWindowWriteLn(WindowHandle,'C:\ drive is ready');
+ ConsoleWindowWriteLn(WindowHandle,'');
+ ThreadSleep(1000);
+ ConsoleWindowWriteLn(WindowHandle, 'Binary Loader is Loading...');
 
- //Get the page table entry for our buffer
- PageTableEntry:=PageTableGetEntry(PtrUInt(Buffer));
+ aLoader := TBinLoader.Create;
+ aLoader.LoadFile('test');
+ ThreadSleep(1000);
+ ConsoleWindowWriteLn(WindowHandle, '');
+ ConsoleWindowWriteLn(WindowHandle, 'Binary Buffer is Checking...');
 
- //Add the executable attribute to our page table entry
- PageTableEntry.Flags:=PageTableEntry.Flags or PAGE_TABLE_FLAG_EXECUTABLE;
+ for i := 0 to 6 do
+ begin
+   ConsoleWindowWriteLn(WindowHandle, InttoHex(aLoader.Buffer[i], 4) );
+ end;
 
- //And write it back so the page will now be executable
- PageTableSetEntry(PageTableEntry);
+ ConsoleWindowWriteLn(WindowHandle, '');
+ ConsoleWindowWriteLn(WindowHandle, '3 Seconds Later Execution');
+ ThreadSleep(3000);
+ ret := aLoader.RunBuffer;
 
 
-  Buffer[0]:=$63;
-  Buffer[1]:=$00;
-  Buffer[2]:=$a0;
-  Buffer[3]:=$e3;
-  Buffer[4]:=$1e;
-  Buffer[5]:=$ff;
-  Buffer[6]:=$2f;
-  Buffer[7]:=$e1;
- CleanDataCacheRange(PtrUInt(Buffer),MEMORY_PAGE_SIZE);
-
- ConsoleWindowWriteLn(WindowHandle, '5 Seconds Later Execution');
- ThreadSleep(5000);
-
- ret := TMyFunc(Buffer)();
-
+ ConsoleWindowWriteLn(WindowHandle, 'Display the Result:');
  ConsoleWindowWriteLn(WindowHandle, IntToStr(ret));
 
 end.

@@ -34,19 +34,19 @@ implementation
 
 function call_function(ModName:String; FuncName:String; Para:PLONG):PLONG; inline;
 begin
-    ModHash, FuncHash:Word;
+    {ModHash, FuncHash:Word;}
     {Hash(*) is inline function}
     {ModHash = Hash(ModName);}
     {FuncHash = Hash(FuncName);}
     {check the API version here?}
-    asm
+    {asm
        push FuncHash
        push ModHash
        bl CAL_ADDR
 
        .word ModHash
        .word FuncHash
-    end;
+    end; }
 end;
 
 end.
